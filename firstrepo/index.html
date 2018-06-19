@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="utf-8">
+      <meta name="author" content="Peter.Gallagher@webelevate.ie">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <!--For some reason I couldn't get jquery to work from local source so had to use cdn-->
+      <link rel = "stylesheet" href = "https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+      <link rel="stylesheet" href="themes/myNewTheme.min.css" />
+      <link rel="stylesheet" href="themes/custom.css" />
+      <link rel="stylesheet" href="themes/jquery.mobile.icons.min.css" />
+      <script src = "https://code.jquery.com/jquery-1.11.3.min.js"></script>
+      <script src = "https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+      <title>MWA A2</title>
+   </head>
+   <body>
+      <!-- Mark-up for welcome modal-->
+      <div data-role="page" data-dialog="true" id="Welcome" data-close-btn="none" data-transition="slidedown">
+         <div data-role="header" >
+            <h3>Rush For A Bus</h3>
+         </div>
+         <!-- Mark-up for initial page-->
+         <div data-role="content">
+            <div class="content-primary">
+               <div data-demo-html="true">
+                  <p id = "bus-info">
+                     Welcome to RUSH FOR A BUS.<br> The app that allows you to enter your bus-stop number to find When the next bus is due, the route number and its destination.<br>  <a href="#home">ENTER</a>
+                  </p>
+               </div>
+            </div>
+         </div>
+      </div>
+      <div data-role="page" id="home">
+         <div data-role="header" >
+            <h3>RUSH FOR A BUS</h3>
+         </div>
+         <!--HTML FOR PAGE CONTENT-->
+         <div data-role="content">
+            <div class="content-primary">
+               <div data-demo-html="true">
+                  <p id = "busSearch">
+                     <label for="search-mini">Enter Bus Stop Number:</label>
+                     <input type="input" name="search-mini" id="bus-stop" value="" data-mini="true" /> 
+                     <button id = "gotNumber" data-mini="true">Click here to search</button>Enter the bus stop number in the search box above and tap the button to more information about the next bus due
+                  </p>
+                  <p id="busInfo"></p>
+               </div>
+            </div>
+         </div>
+         <div data-role="footer" id="myFooter"><button id="refresh" data-icon="refresh"><a href="#home">Refresh</a></button></div>
+      </div>
+      <script>
+         //Use click event to take the bus stop value and send json request based on that value
+         
+         $("#gotNumber").click(function () {
+         var stopnumber = $("#bus-stop").val();
+         //perform multiply by 1 on entered value this will remove any leading zeros
+         //without having to check each value with if statement and substring trim.
+         //Although some stops are numbered with leading zero the stopid will fail if included
+         stopnumber=stopnumber*1;
+         var busUrl = "https://data.smartdublin.ie/cgi-bin/rtpi/realtimebusinformation?";
+         var jqxhr=  $.getJSON(busUrl,{
+         stopid: stopnumber,
+         maxresults: "1",
+         format: "json"
+         })
+         
+         .done (function(data){
+         //Catch error, display an alert and clear values of input box and paragraph
+         if(data.errorcode !="0"){alert("INVALID STOP NUMBER");
+         $("#busInfo").replaceWith("");
+         };
+         //parse array and capture the required information 
+         $(data.results).each(function(index, value){
+                         route=value.route;
+                         due=value.duetime;
+                         to=value.destination;
+                         //produce dynamic information in paragraph
+                        $('#busInfo').append("Next bus due at bus-stop "+$("#bus-stop").val()+" is the Number "+ route+"<br> heading to "+ to+"<br> Minutes until expected at bus-stop: "+ due +"<br>");
+                         
+         })
+         
+         })
+         
+         
+         })
+         //Not an actual refresh 
+         //just remove data from screen
+         $("#refresh").click(function(){
+         $("#busInfo").replaceWith("");          
+         })
+      </script>
+   </body>
+</html>
